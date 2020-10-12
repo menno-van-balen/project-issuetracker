@@ -6,12 +6,18 @@ var express = require("express");
 var bodyParser = require("body-parser");
 var expect = require("chai").expect;
 var cors = require("cors");
-
+const mongoose = require("mongoose");
 var apiRoutes = require("./routes/api.js");
 var fccTestingRoutes = require("./routes/fcctesting.js");
 var runner = require("./test-runner");
 
 var app = express();
+
+mongoose.connect(process.env.DB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+});
 
 app.use("/public", express.static(process.cwd() + "/public"));
 
@@ -40,7 +46,7 @@ apiRoutes(app);
 app.use(function (req, res, next) {
   res.status(404).type("text").send("Not Found");
 });
-console.log(process.env.PORT);
+
 //Start our server and tests!
 app.listen(process.env.PORT || 3000, function () {
   console.log("Listening on port " + process.env.PORT);
