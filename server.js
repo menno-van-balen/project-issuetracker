@@ -13,11 +13,17 @@ var runner = require("./test-runner");
 
 var app = express();
 
-mongoose.connect(process.env.DB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useFindAndModify: false,
-});
+try {
+  mongoose.connect(process.env.DB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+  });
+  console.log("connected to database");
+} catch (e) {
+  console.error(e);
+  throw new Error("Unable to Connect to Database");
+}
 
 app.use("/public", express.static(process.cwd() + "/public"));
 
