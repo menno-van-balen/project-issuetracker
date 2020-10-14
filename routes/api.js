@@ -9,10 +9,10 @@
 "use strict";
 
 var expect = require("chai").expect;
-var MongoClient = require("mongodb");
+// var MongoClient = require("mongodb");
 var ObjectId = require("mongodb").ObjectID;
 
-const CONNECTION_STRING = process.env.DB; //MongoClient.connect(CONNECTION_STRING, function(err, db) {});
+// const CONNECTION_STRING = process.env.DB; //MongoClient.connect(CONNECTION_STRING, function(err, db) {});
 const Issue = require("../models/Issue");
 
 module.exports = function (app) {
@@ -20,21 +20,15 @@ module.exports = function (app) {
     .route("/api/issues/:project")
 
     .get(function (req, res) {
-      var project = req.params.project;
-      console.log(req.params);
-      console.log(req.query);
       //  possible variables in query
-      const {
-        _id,
-        issue_title,
-        issue_text,
-        created_on,
-        created_by,
-        open,
-        assigned_to,
-        status_text,
-      } = req.query;
-      console.log(open, assigned_to);
+      Issue.find()
+        .then((docs) => {
+          // console.log(docs);
+          res.json(docs);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
     })
 
     .post(function (req, res) {
@@ -58,7 +52,6 @@ module.exports = function (app) {
         assigned_to,
         status_text,
       });
-      // console.log(issue);
 
       // save issue to database, respond json file if no error occured
       issue
@@ -94,27 +87,50 @@ module.exports = function (app) {
         issue_title,
         issue_text,
         created_by,
+        assigned_to,
         status_text,
         open,
       } = req.body;
 
-      // create update object, values not filled in will get undefined and ommited (only update if there is content)
+      // create update object for findByIdAndUpdate, values not filled in will get undefined and ommited (only update if there is content)
       const update = {
-        issue_title: (issue_title = issue_title[0] ? issue_title : undefined),
-        issue_text: (issue_text = issue_text[0] ? issue_text : undefined),
+        issue_title: (issue_title = !issue_title
+          ? undefined
+          : issue_title[0]
+          ? issue_title
+          : undefined),
+        issue_text: (issue_text = !issue_text
+          ? undefined
+          : issue_text[0]
+          ? issue_text
+          : undefined),
         updated_on: new Date(),
-        created_by: (created_by = created_by[0] ? created_by : undefined),
-        status_text: (status_text = status_text[0] ? status_text : undefined),
+        created_by: (created_by = !created_by
+          ? undefined
+          : created_by[0]
+          ? created_by
+          : undefined),
+        assigned_to: (assigned_to = !assigned_to
+          ? undefined
+          : assigned_to[0]
+          ? assigned_to
+          : undefined),
+        status_text: (status_text = !status_text
+          ? undefined
+          : status_text[0]
+          ? status_text
+          : undefined),
         open: open ? false : true,
       };
 
       // if no fields are sent
       if (
-        issue_title === undefined &&
-        issue_text === undefined &&
-        created_by === undefined &&
-        status_text === undefined &&
-        open === true
+        update.issue_title === undefined &&
+        update.issue_text === undefined &&
+        update.created_by === undefined &&
+        update.assigned_to === undefined &&
+        update.status_text === undefined &&
+        update.open === true
       ) {
         res.json("no updated field sent");
       } else {
@@ -158,8 +174,9 @@ module.exports = function (app) {
               if (err) {
                 console.error(err);
                 res.json(`could not delete ${_id}`);
+              } else {
+                res.json(`deleted ${_id}`);
               }
-              res.json(`deleted ${_id}`);
             });
           }
         })
