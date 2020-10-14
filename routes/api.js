@@ -24,8 +24,7 @@ module.exports = function (app) {
     })
 
     .post(function (req, res) {
-      // variable for new issue
-      // var project = req.params.project;
+      // variables for new issue
       const _id = new ObjectId();
       const created_on = new Date();
       const open = true;
@@ -71,9 +70,6 @@ module.exports = function (app) {
             assigned_to,
             status_text,
           });
-
-          // clear the form fields
-          // document.getElementById("testForm").reset();
         })
         .catch((e) => {
           console.error(e);
@@ -81,7 +77,64 @@ module.exports = function (app) {
     })
 
     .put(function (req, res) {
-      var project = req.params.project;
+      // variables for update issue request
+      let {
+        _id,
+        issue_title,
+        issue_text,
+        created_by,
+        status_text,
+        open,
+      } = req.body;
+
+      // create update object, values not filled in will get undefined and ommited (only update if there is content)
+      const update = {
+        issue_title: (issue_title = issue_title[0] ? issue_title : undefined),
+        issue_text: (issue_text = issue_text[0] ? issue_text : undefined),
+        created_by: (created_by = created_by[0] ? created_by : undefined),
+        status_text: (status_text = status_text[0] ? status_text : undefined),
+        open: open ? false : true,
+      };
+
+      // only if id is in database update the issue
+      Issue.findById(_id)
+        .then((doc) => {
+          if (doc === null) {
+            res.json("unkown issue id");
+          } else {
+            Issue.findByIdAndUpdate(
+              _id,
+              update,
+              { new: true, omitUndefined: true },
+              (err, doc) => {
+                if (err) {
+                  console.error(er);
+                } else {
+                  const {
+                    _id,
+                    issue_title,
+                    issue_text,
+                    created_by,
+                    status_text,
+                    open,
+                  } = doc;
+
+                  res.json({
+                    _id,
+                    issue_title,
+                    issue_text,
+                    created_by,
+                    status_text,
+                    open,
+                  });
+                }
+              }
+            );
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
     })
 
     .delete(function (req, res) {

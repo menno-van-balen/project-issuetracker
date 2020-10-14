@@ -159,7 +159,7 @@
         /><br />
         <label
           ><input type="checkbox" name="open" value="false" /> Check to close
-          issue</label
+          issue (or uncheck to reopen)</label
         ><br />
         <button type="submit">Submit Issue</button>
       </form>
@@ -206,6 +206,7 @@
             data: $("#testForm2").serialize(),
             success: function (data) {
               $("#jsonResult").text(JSON.stringify(data));
+              $("#testForm")[0].reset();
             },
           });
           e.preventDefault();
