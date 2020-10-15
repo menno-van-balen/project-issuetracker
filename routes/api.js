@@ -10,6 +10,7 @@
 
 var expect = require("chai").expect;
 const ObjectId = require("mongodb").ObjectID;
+const { find } = require("../models/Issue");
 const Issue = require("../models/Issue");
 
 module.exports = function (app) {
@@ -17,7 +18,19 @@ module.exports = function (app) {
     .route("/api/issues/:project")
 
     .get(function (req, res) {
-      Issue.find({ project: req.params.project })
+      // declare findOptions object => contains always the project name
+      let findOptions = { project: req.params.project };
+
+      // add query variables to findOptions object
+      const keys = Object.keys(req.query);
+      const values = Object.values(req.query);
+
+      for (let i = 0; i < keys.length; i++) {
+        findOptions[keys[i]] = values[i];
+      }
+
+      // find issues in datebase with implemented options
+      Issue.find(findOptions)
         .then((docs) => {
           res.json(docs);
         })
