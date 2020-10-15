@@ -9,10 +9,7 @@
 "use strict";
 
 var expect = require("chai").expect;
-// var MongoClient = require("mongodb");
-var ObjectId = require("mongodb").ObjectID;
-
-// const CONNECTION_STRING = process.env.DB; //MongoClient.connect(CONNECTION_STRING, function(err, db) {});
+const ObjectId = require("mongodb").ObjectID;
 const Issue = require("../models/Issue");
 
 module.exports = function (app) {
@@ -20,10 +17,8 @@ module.exports = function (app) {
     .route("/api/issues/:project")
 
     .get(function (req, res) {
-      //  possible variables in query
-      Issue.find()
+      Issue.find({ project: req.params.project })
         .then((docs) => {
-          // console.log(docs);
           res.json(docs);
         })
         .catch((err) => {
@@ -32,7 +27,8 @@ module.exports = function (app) {
     })
 
     .post(function (req, res) {
-      // variables for new issue
+      // variables for new issue per project
+      const project = req.params.project;
       const {
         issue_title,
         issue_text,
@@ -44,6 +40,7 @@ module.exports = function (app) {
       // create a new issue
       const issue = new Issue({
         _id: new ObjectId(),
+        project,
         issue_title,
         issue_text,
         created_on: new Date(),
@@ -57,23 +54,8 @@ module.exports = function (app) {
       issue
         .save()
         .then((doc) => {
-          const {
-            _id,
-            issue_title,
-            issue_text,
-            created_by,
-            assigned_to,
-            status_text,
-          } = doc;
-          console.log("New issue with id:" + _id + " saved to database.");
-          res.json({
-            _id,
-            issue_title,
-            issue_text,
-            created_by,
-            assigned_to,
-            status_text,
-          });
+          console.log("New issue with id: " + doc._id + " saved to database.");
+          res.json(doc);
         })
         .catch((e) => {
           console.error(e);
@@ -92,7 +74,7 @@ module.exports = function (app) {
         open,
       } = req.body;
 
-      // create update object for findByIdAndUpdate, values not filled in will get undefined and ommited (only update if there is content)
+      // create update object for findByIdAndUpdate, values not filled in will get undefined and ommited (...only update if there is content)
       const update = {
         issue_title: (issue_title = !issue_title
           ? undefined
