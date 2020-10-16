@@ -24,7 +24,6 @@ module.exports = function (app) {
       // add query variables to findOptions object
       const keys = Object.keys(req.query);
       const values = Object.values(req.query);
-
       for (let i = 0; i < keys.length; i++) {
         findOptions[keys[i]] = values[i];
       }
@@ -50,29 +49,38 @@ module.exports = function (app) {
         status_text,
       } = req.body;
 
-      // create a new issue
-      const issue = new Issue({
-        _id: new ObjectId(),
-        project,
-        issue_title,
-        issue_text,
-        created_on: new Date(),
-        created_by,
-        open: true,
-        assigned_to,
-        status_text,
-      });
+      if (issue_title === "" || issue_text === "" || created_by === "") {
+        res.json("error: missing required field(s)");
+      } else {
+        // create a new issue
+        const date = new Date();
 
-      // save issue to database, respond json file if no error occured
-      issue
-        .save()
-        .then((doc) => {
-          console.log("New issue with id: " + doc._id + " saved to database.");
-          res.json(doc);
-        })
-        .catch((e) => {
-          console.error(e);
+        const issue = new Issue({
+          _id: new ObjectId(),
+          project,
+          issue_title,
+          issue_text,
+          created_on: date,
+          updated_on: date,
+          created_by,
+          open: true,
+          assigned_to,
+          status_text,
         });
+
+        // save issue to database, respond json file if no error occured
+        issue
+          .save()
+          .then((doc) => {
+            console.log(
+              "New issue with id: " + doc._id + " saved to database."
+            );
+            res.json(doc);
+          })
+          .catch((e) => {
+            console.error(e);
+          });
+      }
     })
 
     .put(function (req, res) {
@@ -159,7 +167,6 @@ module.exports = function (app) {
 
     .delete(function (req, res) {
       const _id = req.body._id;
-
       Issue.findById(_id)
         .then((doc) => {
           if (doc === null) {
