@@ -13,7 +13,8 @@ var server = require("../server");
 
 chai.use(chaiHttp);
 
-let id;
+let id1;
+let id2;
 
 suite("Functional Tests", function () {
   suite("POST /api/issues/{project} => object with issue data", function () {
@@ -32,7 +33,7 @@ suite("Functional Tests", function () {
           const respons = res.body;
 
           // we need this id later in the PUT tests
-          id = respons._id;
+          id1 = respons._id;
           assert.equal(res.status, 200);
           assert.property(respons, "_id");
           assert.property(res.body, "created_on");
@@ -59,6 +60,8 @@ suite("Functional Tests", function () {
         })
         .end((err, res) => {
           const respons = res.body;
+          id2 = respons._id;
+
           assert.equal(res.status, 200);
           assert.property(respons, "_id");
           assert.property(res.body, "created_on");
@@ -95,7 +98,7 @@ suite("Functional Tests", function () {
         .request(server)
         .put("/api/issues/test")
         .send({
-          _id: id,
+          _id: id1,
         })
         .end((err, res) => {
           assert.equal(res.status, 200);
@@ -109,7 +112,7 @@ suite("Functional Tests", function () {
         .request(server)
         .put("/api/issues/test")
         .send({
-          _id: id,
+          _id: id1,
           issue_text: "some new text",
         })
         .end((err, res) => {
@@ -124,7 +127,7 @@ suite("Functional Tests", function () {
         .request(server)
         .put("/api/issues/test")
         .send({
-          _id: id,
+          _id: id1,
           issue_title: "a new title",
           issue_text: "some more new text",
           open: false,
@@ -165,7 +168,7 @@ suite("Functional Tests", function () {
         chai
           .request(server)
           .get("/api/issues/test")
-          .query({ _id: id })
+          .query({ _id: id1 })
           .end((err, res) => {
             assert.equal(res.status, 200);
             assert.equal(res.body[0].issue_text, "some more new text");
@@ -212,10 +215,10 @@ suite("Functional Tests", function () {
       chai
         .request(server)
         .delete("/api/issues/test")
-        .send({ _id: id })
+        .send({ _id: id2 })
         .end((err, res) => {
           assert.equal(res.status, 200);
-          assert.equal(res.body, `deleted ${id}`);
+          assert.equal(res.body, `deleted ${id2}`);
           done();
         });
     });

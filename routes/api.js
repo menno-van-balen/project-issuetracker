@@ -177,6 +177,7 @@ module.exports = function (app) {
                 console.error(err);
                 res.json(`could not delete ${_id}`);
               } else {
+                console.log(`Issue with id ${_id} deleted from database`);
                 res.json(`deleted ${_id}`);
               }
             });
