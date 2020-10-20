@@ -149,7 +149,7 @@ module.exports = function (app) {
                 { new: true, omitUndefined: true },
                 (err, doc) => {
                   if (err) {
-                    console.error(er);
+                    console.error(err);
                     res.json(`could not update ${_id}`);
                   } else {
                     res.json("successfully updated");
